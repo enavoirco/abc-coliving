@@ -1,17 +1,28 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import dotenv from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
-import { createServer as createViteServer } from 'vite';
 
 dotenv.config();
 
 const PORT = 3000;
-const DB_PATH = process.env.DATABASE_PATH || path.join(process.cwd(), 'abc.db');
+const DB_PATH = process.env.DATABASE_PATH || path.join(process.env.VERCEL ? '/tmp' : process.cwd(), 'abc.db');
 const SESSION_SECRET = process.env.SESSION_SECRET || 'abc-coliving-secret-key-2026';
 const DEFAULT_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@abc.com').toLowerCase().trim();
 const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'abc-admin-password';
+
+if (process.env.VERCEL && !fs.existsSync(DB_PATH)) {
+  try {
+    const seedDbPath = path.join(process.cwd(), 'abc.db');
+    if (fs.existsSync(seedDbPath)) {
+      fs.copyFileSync(seedDbPath, DB_PATH);
+    }
+  } catch (err) {
+    console.error('Failed to copy initial SQLite database to /tmp:', err);
+  }
+}
 
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA journal_mode = WAL;');
@@ -685,9 +696,20 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-async function startServer() {
+export async function createApp(serveFrontend = false) {
   const app = express();
   app.use(express.json({ limit: '5mb' }));
+
+  app.use('/api', (req, res, next) => {
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
 
   // Serve generated images in both dev and production
   app.use('/src/assets', express.static(path.join(process.cwd(), 'src/assets')));
@@ -1476,26 +1498,46 @@ async function startServer() {
     res.json({ settings: getSettingsObject() });
   });
 
+  app.use('/api', (_req, res) => {
+    res.status(404).json({ error: 'API route not found.' });
+  });
+
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    if (_req.path.startsWith('/api/')) {
+      console.error('API error:', err);
+      res.status(err?.status || 500).json({ error: err?.message || 'Something went wrong.' });
+      return;
+    }
+    _next(err);
+  });
+
   // ==========================================
   // VITE / STATIC FRONTEND SERVING
   // ==========================================
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+  if (serveFrontend) {
+    if (process.env.NODE_ENV !== 'production') {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } else {
+      const distPath = path.join(process.cwd(), 'dist');
+      app.use(express.static(distPath));
+      app.get('*', (_req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+    }
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ABC Coliving server running on http://0.0.0.0:${PORT}`);
-  });
+  return app;
 }
 
-startServer();
+if (process.env.VERCEL !== '1') {
+  void createApp(true).then((app) => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`ABC Coliving server running on http://0.0.0.0:${PORT}`);
+    });
+  });
+}
