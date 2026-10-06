@@ -13,20 +13,46 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'abc-coliving-secret-key-20
 const DEFAULT_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@abc.com').toLowerCase().trim();
 const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'abc-admin-password';
 
-if (process.env.VERCEL && !fs.existsSync(DB_PATH)) {
-  try {
-    const seedDbPath = path.join(process.cwd(), 'abc.db');
-    if (fs.existsSync(seedDbPath)) {
-      fs.copyFileSync(seedDbPath, DB_PATH);
+let dbInstance: DatabaseSync | null = null;
+let dbInitialized = false;
+
+function getDb(): DatabaseSync {
+  if (!dbInstance) {
+    if (process.env.VERCEL && !fs.existsSync(DB_PATH)) {
+      try {
+        const seedDbPath = path.join(process.cwd(), 'abc.db');
+        if (fs.existsSync(seedDbPath)) {
+          fs.copyFileSync(seedDbPath, DB_PATH);
+        }
+      } catch (err) {
+        console.error('Failed to copy initial SQLite database to /tmp:', err);
+      }
     }
-  } catch (err) {
-    console.error('Failed to copy initial SQLite database to /tmp:', err);
+    dbInstance = new DatabaseSync(DB_PATH);
+    try {
+      dbInstance.exec('PRAGMA journal_mode = WAL;');
+    } catch {
+      dbInstance.exec('PRAGMA journal_mode = DELETE;');
+    }
+    dbInstance.exec('PRAGMA foreign_keys = ON;');
   }
+
+  if (!dbInitialized) {
+    dbInitialized = true;
+    initDatabase();
+    runMigrations();
+  }
+
+  return dbInstance;
 }
 
-const db = new DatabaseSync(DB_PATH);
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA foreign_keys = ON;');
+const db = new Proxy({} as DatabaseSync, {
+  get(_target, prop) {
+    const instance = getDb() as any;
+    const value = instance[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+});
 
 function hashPassword(password: string, salt = crypto.randomBytes(16).toString('hex')): string {
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
@@ -621,22 +647,26 @@ function initDatabase() {
   }
 }
 
-initDatabase();
-
-const legacyImagePrefix = '/src/assets/images/';
-const staticImagePrefix = '/images/';
-db.prepare("UPDATE site_settings SET value = REPLACE(value, ?, ?) WHERE key IN ('heroImage', 'lifestyleImage')")
-  .run(legacyImagePrefix, staticImagePrefix);
-db.prepare('UPDATE room_images SET url = REPLACE(url, ?, ?) WHERE url LIKE ?')
-  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
-db.prepare('UPDATE amenities SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
-  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
-db.prepare('UPDATE gallery_images SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
-  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
-db.prepare('UPDATE food_items SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
-  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
-db.prepare('UPDATE testimonials SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
-  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+function runMigrations() {
+  try {
+    const legacyImagePrefix = '/src/assets/images/';
+    const staticImagePrefix = '/images/';
+    db.prepare("UPDATE site_settings SET value = REPLACE(value, ?, ?) WHERE key IN ('heroImage', 'lifestyleImage')")
+      .run(legacyImagePrefix, staticImagePrefix);
+    db.prepare('UPDATE room_images SET url = REPLACE(url, ?, ?) WHERE url LIKE ?')
+      .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+    db.prepare('UPDATE amenities SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
+      .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+    db.prepare('UPDATE gallery_images SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
+      .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+    db.prepare('UPDATE food_items SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
+      .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+    db.prepare('UPDATE testimonials SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
+      .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+  } catch (err) {
+    console.error('Migration notice:', err);
+  }
+}
 
 // Helper functions to format DB rows
 function getSettingsObject(): Record<string, string> {
