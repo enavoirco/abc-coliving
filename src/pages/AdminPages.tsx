@@ -36,12 +36,12 @@ import {
 import { ResilientImage } from '../components/ResilientImage';
 
 const PRESET_IMAGES = [
-  { label: 'Hero Lounge', url: '/src/assets/images/zenn_hero_living_1791277920156.jpg' },
-  { label: 'Single Room', url: '/src/assets/images/zenn_single_room_1791277933710.jpg' },
-  { label: 'Double Room', url: '/src/assets/images/zenn_double_room_1791277946759.jpg' },
-  { label: 'Triple Room', url: '/src/assets/images/zenn_triple_room_1791277957453.jpg' },
-  { label: 'Dining & Meals', url: '/src/assets/images/zenn_dining_food_1791277967774.jpg' },
-  { label: 'Study Lounge', url: '/src/assets/images/zenn_study_cowork_1791277978036.jpg' },
+  { label: 'Hero Lounge', url: '/images/zenn_hero_living_1791277920156.jpg' },
+  { label: 'Single Room', url: '/images/zenn_single_room_1791277933710.jpg' },
+  { label: 'Double Room', url: '/images/zenn_double_room_1791277946759.jpg' },
+  { label: 'Triple Room', url: '/images/zenn_triple_room_1791277957453.jpg' },
+  { label: 'Dining & Meals', url: '/images/zenn_dining_food_1791277967774.jpg' },
+  { label: 'Study Lounge', url: '/images/zenn_study_cowork_1791277978036.jpg' },
 ];
 
 const ENQUIRY_STATUSES: EnquiryStatus[] = [
@@ -860,7 +860,7 @@ export const AdminRoomsPage: React.FC = () => {
       published: true,
     });
     setFeaturesText('Private Occupancy\nDedicated Study Desk\nPersonal Wardrobe\nHigh-Speed Wi-Fi');
-    setImagesText('/src/assets/images/zenn_single_room_1791277933710.jpg');
+    setImagesText('/images/zenn_single_room_1791277933710.jpg');
   };
 
   const startEdit = (room: Room) => {

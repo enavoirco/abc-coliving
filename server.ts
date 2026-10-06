@@ -215,8 +215,8 @@ function initDatabase() {
     transportInfo: '',
     instagram: '',
     facebook: '',
-    heroImage: '/src/assets/images/zenn_hero_living_1791277920156.jpg',
-    lifestyleImage: '/src/assets/images/zenn_study_cowork_1791277978036.jpg',
+    heroImage: '/images/zenn_hero_living_1791277920156.jpg',
+    lifestyleImage: '/images/zenn_study_cowork_1791277978036.jpg',
     logo: '',
     favicon: '',
     seoTitle: 'ABC Coliving | Comfortable Modern Co-Living',
@@ -254,8 +254,8 @@ function initDatabase() {
           'Regular Housekeeping Included',
         ],
         images: [
-          '/src/assets/images/zenn_single_room_1791277933710.jpg',
-          '/src/assets/images/zenn_study_cowork_1791277978036.jpg',
+          '/images/zenn_single_room_1791277933710.jpg',
+          '/images/zenn_study_cowork_1791277978036.jpg',
         ],
         availability: 'Available',
         featured: 1,
@@ -279,8 +279,8 @@ function initDatabase() {
           'Regular Room Cleaning',
         ],
         images: [
-          '/src/assets/images/zenn_double_room_1791277946759.jpg',
-          '/src/assets/images/zenn_hero_living_1791277920156.jpg',
+          '/images/zenn_double_room_1791277946759.jpg',
+          '/images/zenn_hero_living_1791277920156.jpg',
         ],
         availability: 'Available',
         featured: 1,
@@ -304,8 +304,8 @@ function initDatabase() {
           'Daily Common Area Upkeep',
         ],
         images: [
-          '/src/assets/images/zenn_triple_room_1791277957453.jpg',
-          '/src/assets/images/zenn_dining_food_1791277967774.jpg',
+          '/images/zenn_triple_room_1791277957453.jpg',
+          '/images/zenn_dining_food_1791277967774.jpg',
         ],
         availability: 'Limited Availability',
         featured: 1,
@@ -452,7 +452,7 @@ function initDatabase() {
     const initialGallery = [
       {
         id: 'gal-1',
-        image: '/src/assets/images/zenn_hero_living_1791277920156.jpg',
+        image: '/images/zenn_hero_living_1791277920156.jpg',
         title: 'The Resident Lounge',
         category: 'Common Areas',
         description: 'Sunlit communal living room with natural teakwood seating and quiet reading corners.',
@@ -460,7 +460,7 @@ function initDatabase() {
       },
       {
         id: 'gal-2',
-        image: '/src/assets/images/zenn_single_room_1791277933710.jpg',
+        image: '/images/zenn_single_room_1791277933710.jpg',
         title: 'Private Single Suite',
         category: 'Bedrooms',
         description: 'Calm single-sharing bedroom with dedicated workspace and natural daylight.',
@@ -468,7 +468,7 @@ function initDatabase() {
       },
       {
         id: 'gal-3',
-        image: '/src/assets/images/zenn_double_room_1791277946759.jpg',
+        image: '/images/zenn_double_room_1791277946759.jpg',
         title: 'Twin Sharing Residence',
         category: 'Bedrooms',
         description: 'Balanced twin layout with individual reading sconces and private storage.',
@@ -476,7 +476,7 @@ function initDatabase() {
       },
       {
         id: 'gal-4',
-        image: '/src/assets/images/zenn_dining_food_1791277967774.jpg',
+        image: '/images/zenn_dining_food_1791277967774.jpg',
         title: 'Communal Dining Table',
         category: 'Dining',
         description: 'Freshly prepared homestyle meals served daily in a warm, welcoming dining room.',
@@ -484,7 +484,7 @@ function initDatabase() {
       },
       {
         id: 'gal-5',
-        image: '/src/assets/images/zenn_study_cowork_1791277978036.jpg',
+        image: '/images/zenn_study_cowork_1791277978036.jpg',
         title: 'Quiet Focus & Study Lounge',
         category: 'Study Spaces',
         description: 'Acoustic timber paneling and task lighting tailored for remote work and exam preparation.',
@@ -492,7 +492,7 @@ function initDatabase() {
       },
       {
         id: 'gal-6',
-        image: '/src/assets/images/zenn_triple_room_1791277957453.jpg',
+        image: '/images/zenn_triple_room_1791277957453.jpg',
         title: 'Triple Sharing Studio',
         category: 'Bedrooms',
         description: 'Spacious three-bed layout with thoughtful privacy partitions and study desks.',
@@ -520,7 +520,7 @@ function initDatabase() {
         description:
           'Start your morning with warm, comforting homestyle breakfast options prepared fresh in our kitchen alongside hot tea and filter coffee before you head out for work or classes.',
         timing: 'Morning Service · Configured per house schedule',
-        image: '/src/assets/images/zenn_dining_food_1791277967774.jpg',
+        image: '/images/zenn_dining_food_1791277967774.jpg',
         order: 1,
       },
       {
@@ -530,7 +530,7 @@ function initDatabase() {
         description:
           'Wholesome, lightly spiced everyday meals prepared with clean ingredients, seasonal vegetables, lentils, and grains designed to keep you energized through the afternoon.',
         timing: 'Midday Service · Configured per house schedule',
-        image: '/src/assets/images/zenn_dining_food_1791277967774.jpg',
+        image: '/images/zenn_dining_food_1791277967774.jpg',
         order: 2,
       },
       {
@@ -540,7 +540,7 @@ function initDatabase() {
         description:
           'Come home to a freshly cooked evening meal served in our communal dining space—made with care so everyday dining feels simple, hygienic, and comforting.',
         timing: 'Evening Service · Configured per house schedule',
-        image: '/src/assets/images/zenn_dining_food_1791277967774.jpg',
+        image: '/images/zenn_dining_food_1791277967774.jpg',
         order: 3,
       },
     ];
@@ -611,6 +611,21 @@ function initDatabase() {
 }
 
 initDatabase();
+
+const legacyImagePrefix = '/src/assets/images/';
+const staticImagePrefix = '/images/';
+db.prepare("UPDATE site_settings SET value = REPLACE(value, ?, ?) WHERE key IN ('heroImage', 'lifestyleImage')")
+  .run(legacyImagePrefix, staticImagePrefix);
+db.prepare('UPDATE room_images SET url = REPLACE(url, ?, ?) WHERE url LIKE ?')
+  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+db.prepare('UPDATE amenities SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
+  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+db.prepare('UPDATE gallery_images SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
+  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+db.prepare('UPDATE food_items SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
+  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
+db.prepare('UPDATE testimonials SET image = REPLACE(image, ?, ?) WHERE image LIKE ?')
+  .run(legacyImagePrefix, staticImagePrefix, `${legacyImagePrefix}%`);
 
 // Helper functions to format DB rows
 function getSettingsObject(): Record<string, string> {
@@ -1025,7 +1040,7 @@ async function startServer() {
     const featureList = Array.isArray(features) ? features : [];
     const imageList = Array.isArray(images) && images.length > 0
       ? images
-      : ['/src/assets/images/zenn_single_room_1791277933710.jpg'];
+      : ['/images/zenn_single_room_1791277933710.jpg'];
 
     db.prepare(`
       INSERT INTO rooms (
@@ -1283,7 +1298,7 @@ async function startServer() {
       String(title || meal).trim(),
       String(description).trim(),
       String(timing || '').trim(),
-      String(image || '/src/assets/images/zenn_dining_food_1791277967774.jpg').trim(),
+      String(image || '/images/zenn_dining_food_1791277967774.jpg').trim(),
       Number(order || 1),
       active === false ? 0 : 1
     );

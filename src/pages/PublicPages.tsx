@@ -1081,11 +1081,11 @@ export const HomePage: React.FC = () => {
   const heroImageUrl =
     settings.heroImage ||
     gallery[0]?.image ||
-    '/src/assets/images/zenn_hero_living_1791277920156.jpg';
+    '/images/zenn_hero_living_1791277920156.jpg';
 
   const lifestyleImageUrl =
     settings.lifestyleImage ||
-    '/src/assets/images/zenn_study_cowork_1791277978036.jpg';
+    '/images/zenn_study_cowork_1791277978036.jpg';
 
   // Parallax ref for Lifestyle section
   const lifestyleRef = useRef<HTMLDivElement | null>(null);
@@ -1561,7 +1561,7 @@ export const RoomDetailPage: React.FC = () => {
 
   const images = room.images && room.images.length > 0
     ? room.images
-    : ['/src/assets/images/zenn_single_room_1791277933710.jpg'];
+    : ['/images/zenn_single_room_1791277933710.jpg'];
 
   const priceDisplay =
     room.price !== null && room.price !== undefined && Number(room.price) > 0
