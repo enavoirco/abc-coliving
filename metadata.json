@@ -1,0 +1,6 @@
+{
+  "name": "ABC Coliving | Comfortable Modern Co-Living",
+  "description": "Discover comfortable rooms, convenient amenities and community-focused living at ABC Coliving.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
