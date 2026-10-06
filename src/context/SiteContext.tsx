@@ -176,7 +176,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSettings({ ...defaultSettings, ...(data.settings || {}) });
       setRooms(Array.isArray(data.rooms) ? data.rooms : []);
       setAmenities(Array.isArray(data.amenities) ? data.amenities : []);
-      setGallery(Array.isArray(data.gallery) ? data.gallery : []);
+      const galleryItems = Array.isArray(data.gallery) ? data.gallery : [];
+      setGallery(galleryItems.length > 0 ? galleryItems : fallbackGallery);
       setFood(Array.isArray(data.food) ? data.food : []);
       setTestimonials(Array.isArray(data.testimonials) ? data.testimonials : []);
       setFaqs(Array.isArray(data.faqs) ? data.faqs : []);

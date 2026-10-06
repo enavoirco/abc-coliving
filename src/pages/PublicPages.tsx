@@ -565,7 +565,9 @@ export const GallerySection: React.FC<{ isFullPage?: boolean }> = ({ isFullPage 
       );
 
   const filteredGallery = gallery.filter(
-    (item) => selectedCategory === 'All' || item.category === selectedCategory
+    (item) =>
+      selectedCategory === 'All' ||
+      item.category.trim().toLocaleLowerCase() === selectedCategory.trim().toLocaleLowerCase()
   );
 
   // Keyboard navigation for Lightbox (ESC, ArrowLeft, ArrowRight)
