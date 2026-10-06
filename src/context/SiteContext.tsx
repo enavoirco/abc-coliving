@@ -70,6 +70,69 @@ const defaultSettings: SiteSettings = {
   seoDescription: 'Discover comfortable rooms, convenient amenities and community-focused living at ABC Coliving.',
 };
 
+const fallbackGallery: GalleryItem[] = [
+  {
+    id: 'fallback-gal-1',
+    image: '/images/zenn_hero_living_1791277920156.jpg',
+    title: 'The Resident Lounge',
+    category: 'Common Areas',
+    description: 'Sunlit communal living room with natural teakwood seating and quiet reading corners.',
+    order: 1,
+    published: true,
+    createdAt: '',
+  },
+  {
+    id: 'fallback-gal-2',
+    image: '/images/zenn_single_room_1791277933710.jpg',
+    title: 'Private Single Suite',
+    category: 'Bedrooms',
+    description: 'Calm single-sharing bedroom with dedicated workspace and natural daylight.',
+    order: 2,
+    published: true,
+    createdAt: '',
+  },
+  {
+    id: 'fallback-gal-3',
+    image: '/images/zenn_double_room_1791277946759.jpg',
+    title: 'Twin Sharing Residence',
+    category: 'Bedrooms',
+    description: 'Balanced twin layout with individual reading sconces and private storage.',
+    order: 3,
+    published: true,
+    createdAt: '',
+  },
+  {
+    id: 'fallback-gal-4',
+    image: '/images/zenn_dining_food_1791277967774.jpg',
+    title: 'Communal Dining Table',
+    category: 'Dining',
+    description: 'Freshly prepared homestyle meals served daily in a warm, welcoming dining room.',
+    order: 4,
+    published: true,
+    createdAt: '',
+  },
+  {
+    id: 'fallback-gal-5',
+    image: '/images/zenn_study_cowork_1791277978036.jpg',
+    title: 'Quiet Focus & Study Lounge',
+    category: 'Study Spaces',
+    description: 'Acoustic timber paneling and task lighting tailored for remote work and exam preparation.',
+    order: 5,
+    published: true,
+    createdAt: '',
+  },
+  {
+    id: 'fallback-gal-6',
+    image: '/images/zenn_triple_room_1791277957453.jpg',
+    title: 'Triple Sharing Studio',
+    category: 'Bedrooms',
+    description: 'Spacious three-bed layout with thoughtful privacy partitions and study desks.',
+    order: 6,
+    published: true,
+    createdAt: '',
+  },
+];
+
 const SiteContext = createContext<SiteContextValue | undefined>(undefined);
 
 const ADMIN_TOKEN_STORAGE_KEY = 'abc_admin_auth_token';
@@ -119,6 +182,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setFaqs(Array.isArray(data.faqs) ? data.faqs : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to connect to server.');
+      setGallery(fallbackGallery);
     } finally {
       setLoading(false);
     }
